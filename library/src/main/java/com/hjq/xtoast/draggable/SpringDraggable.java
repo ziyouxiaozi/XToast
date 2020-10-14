@@ -7,8 +7,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
-import com.hjq.xtoast.XToast;
-
 /**
  *    author : Android 轮子哥
  *    github : https://github.com/getActivity/XToast
@@ -17,18 +15,9 @@ import com.hjq.xtoast.XToast;
  */
 public class SpringDraggable extends BaseDraggable {
 
-    /** 屏幕高度 */
-    private float mScreenWidth;
-
     /** 手指按下的坐标 */
     private float mViewDownX;
     private float mViewDownY;
-
-    @Override
-    public void start(XToast toast) {
-        super.start(toast);
-        mScreenWidth = getScreenWidth();
-    }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -53,19 +42,21 @@ public class SpringDraggable extends BaseDraggable {
                 // 记录移动的位置（相对屏幕的坐标）
                 rawMoveX = (int) event.getRawX();
                 rawMoveY = (int) (event.getRawY() - getStatusBarHeight());
+                // 获取当前屏幕的宽度
+                int screenWidth = getScreenWidth();
                 // 自动回弹吸附
                 final float rawFinalX;
-                if (rawMoveX < mScreenWidth / 2) {
+                if (rawMoveX < screenWidth / 2) {
                     // 回弹到屏幕左边
                     rawFinalX = 0;
                 } else {
                     // 回弹到屏幕右边
-                    rawFinalX = mScreenWidth;
+                    rawFinalX = screenWidth;
                 }
                 // 从移动的点回弹到边界上
                 startAnimation(rawMoveX - mViewDownX, rawFinalX  - mViewDownX, rawMoveY - mViewDownY);
-                // 如果产生了移动就拦截这个事件（与按下的坐标不一致时）
-                return mViewDownX != (int) event.getX() || mViewDownY != (int) event.getY();
+                // 如果用户移动了手指，那么就拦截本次触摸事件，从而不让点击事件生效
+                return isTouchMove(mViewDownX, event.getX(), mViewDownY, event.getY());
             default:
                 break;
         }
